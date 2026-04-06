@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mr.AudIT Assessment</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07111e; --s1:#0d1b2f; --s2:#142743; --s3:#1d3557;
+  --border:rgba(252,203,6,0.15); --border2:rgba(252,203,6,0.3);
+  --text:#f8fafc; --muted:#94a3b8; --dim:#cbd5e1;
+  --green:#4ade80; --yellow:#facc15; --orange:#F26522; --red:#f87171;
+  --csk-yellow:#FCCB06; --csk-blue:#004B87;
+  --primary-bg:rgba(252,203,6,0.08); --blue-tint:rgba(96,165,250,0.15);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* Intro & Common */
+#intro, #audit-details {min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;position:relative;}
+#intro::before, #audit-details::before {content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 20%, rgba(252,203,6,0.05) 0%,transparent 70%);pointer-events:none;}
+
+.intro-badge{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:2px;color:var(--csk-yellow);border:1px solid rgba(252,203,6,0.3);padding:6px 16px;border-radius:20px;margin-bottom:1.5rem;background:var(--primary-bg);}
+.intro-title{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.2;margin-bottom:1rem;letter-spacing:-0.5px}
+.intro-title span{color:var(--csk-yellow)}
+.intro-sub{font-size:1.1rem;color:var(--muted);max-width:560px;line-height:1.7;margin-bottom:3rem}
+
+/* Deck Selector */
+.deck-selector{display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;margin-top:1rem;}
+.deck-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:2rem;width:300px;text-align:left;cursor:pointer;transition:all 0.3s ease;}
+.deck-card:hover{border-color:var(--csk-yellow);transform:translateY(-6px);box-shadow:0 12px 35px rgba(0,0,0,0.6), 0 0 25px rgba(252,203,6,0.15);}
+.deck-icon{font-size:2.5rem;margin-bottom:1rem;display:inline-block;padding:12px;background:var(--s2);border-radius:8px;color:var(--csk-yellow)}
+.deck-title{font-size:1.4rem;font-weight:700;margin-bottom:0.5rem;color:var(--text); letter-spacing:-0.5px;}
+.deck-desc{font-size:14px;color:var(--dim);line-height:1.6;margin-bottom:1.5rem}
+.start-btn{background:var(--csk-yellow);color:#000;border:none;width:100%;padding:12px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;letter-spacing:0.5px;transition:all 0.2s;}
+.start-btn:hover{background:#e5b600}
+.start-btn.secondary{background:var(--orange);color:#fff}
+.start-btn.secondary:hover{background:#d95315}
+
+/* Form Styles */
+.form-container { background: var(--s1); padding: 2rem; border-radius: 12px; border: 1px solid var(--border); text-align: left; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index:10; }
+.form-group { margin-bottom: 1.2rem; }
+.form-label { display: block; font-size: 11px; color: var(--csk-yellow); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.form-input, .form-select { width: 100%; padding: 10px 14px; background: var(--s2); border: 1px solid var(--border2); color: var(--text); border-radius: 6px; font-family: 'Syne', sans-serif; font-size: 13px; transition: border-color 0.2s; }
+.form-input[type="file"] { padding: 7px 10px; cursor: pointer; color: var(--dim); }
+.form-input[type="file"]::-webkit-file-upload-button { background: var(--s3); color: var(--text); border: none; padding: 5px 10px; border-radius: 4px; font-family: 'Syne', sans-serif; cursor: pointer; margin-right: 10px; }
+.form-input:focus, .form-select:focus { outline: none; border-color: var(--csk-yellow); }
+
+/* Quiz */
+#quiz{display:none;min-height:100vh;padding:0}
+.quiz-header{position:sticky;top:0;z-index:50;background:rgba(7,17,30,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0.75rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.quiz-progress-wrap{flex:1;max-width:400px}
+.quiz-progress-label{font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+.quiz-progress-bar{height:3px;background:var(--s3);border-radius:2px;overflow:hidden}
+.quiz-progress-fill{height:3px;background:var(--csk-yellow);border-radius:2px;transition:width 0.4s ease}
+.quiz-title-small{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--csk-yellow);letter-spacing:1px}
+.skip-btn{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Syne',sans-serif;transition:all 0.2s;}
+.skip-btn:hover{color:var(--text);border-color:var(--csk-yellow)}
+
+.quiz-body{max-width:760px;margin:0 auto;padding:3rem 2rem 6rem}
+.domain-section{margin-bottom:3rem;animation:fadeUp 0.4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.domain-header{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+.domain-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--s2);}
+.domain-name{font-size:1.1rem;font-weight:700;letter-spacing:-0.3px}
+.domain-desc{font-size:12px;color:var(--muted);margin-top:2px}
+.domain-count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--csk-yellow)}
+
+.q-item{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:10px;transition:border-color 0.2s;}
+.q-item:hover{border-color:var(--border2)}
+.q-item.answered{border-color:rgba(252,203,6,0.4)}
+.q-text{font-size:14px;line-height:1.6;margin-bottom:12px;color:var(--dim)}
+.q-weight{float:right;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--csk-yellow);background:var(--primary-bg);padding:2px 6px;border-radius:3px;margin-left:8px;border:1px solid rgba(252,203,6,0.2)}
+.q-options{display:flex;gap:8px;flex-wrap:wrap}
+.q-opt{flex:1;min-width:80px;padding:8px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;transition:all 0.15s;text-align:center;white-space:nowrap;}
+.q-opt:hover{border-color:var(--border2);color:var(--text)}
+.q-opt.sel-yes{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.q-opt.sel-partial{background:var(--yellow-bg);border-color:var(--yellow);color:var(--yellow)}
+.q-opt.sel-no{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.q-opt.sel-na{background:rgba(148,163,184,0.08);border-color:rgba(148,163,184,0.3);color:var(--dim)}
+
+.generate-wrap{position:fixed;bottom:0;left:0;right:0;background:rgba(7,17,30,0.97);border-top:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;z-index:50;backdrop-filter:blur(12px);}
+.gen-info{font-size:13px;color:var(--muted)}
+.gen-info strong{color:var(--text)}
+.generate-btn{background:var(--csk-yellow);color:#000;border:none;padding:12px 32px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all 0.2s;white-space:nowrap;}
+.generate-btn:hover{background:#e5b600;transform:translateY(-1px)}
+.generate-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* Results */
+#results{display:none;min-height:100vh}
+.res-header{background:var(--s1);border-bottom:1px solid var(--border);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.res-header-left{display:flex;align-items:center;gap:12px}
+.res-logo{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--csk-yellow);letter-spacing:1px}
+.res-title{font-size:1.2rem;font-weight:700}
+.res-meta{font-size:12px;color:var(--muted)}
+.res-actions{display:flex;gap:8px}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--dim);padding:8px 16px;border-radius:7px;font-size:12px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;transition:all 0.2s;}
+.btn-ghost:hover{color:var(--text);border-color:var(--csk-yellow)}
+.btn-primary{background:var(--csk-yellow);color:#000;border:none;padding:8px 18px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all 0.2s;}
+.btn-primary:hover{background:#e5b600}
+
+.res-body{max-width:1200px;margin:0 auto;padding:2rem}
+.score-hero{display:grid;grid-template-columns:auto 1fr;gap:2rem;background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:2rem;margin-bottom:1.5rem;align-items:center;}
+.score-ring-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.score-ring-svg{width:140px;height:140px}
+.score-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.score-verdict{font-size:1.5rem;font-weight:800;margin-bottom:4px;letter-spacing:-0.5px}
+.score-desc{font-size:13px;color:var(--muted);line-height:1.6;max-width:480px;margin-bottom:1rem}
+.score-stats{display:flex;gap:1.5rem;flex-wrap:wrap}
+.stat-box{background:var(--s2);border-radius:8px;padding:10px 16px;min-width:80px;border:1px solid rgba(255,255,255,0.05)}
+.stat-val{font-family:'JetBrains Mono',monospace;font-size:1.4rem;font-weight:700}
+.stat-key{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:1rem;}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:1.25rem;box-shadow:0 4px 6px rgba(0,0,0,0.1)}
+.card-hd{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--csk-yellow);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+.chart-wrap{position:relative;width:100%}
+
+.domain-score-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.domain-score-row:last-child{border-bottom:none}
+.ds-name{font-size:13px;flex:1}
+.ds-pct{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;width:42px;text-align:right}
+.ds-bar-wrap{width:120px;height:5px;background:var(--s3);border-radius:3px;overflow:hidden}
+.ds-bar{height:5px;border-radius:3px;transition:width 0.8s ease}
+
+.finding-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);align-items:flex-start;}
+.finding-item:last-child{border-bottom:none}
+.find-sev{width:6px;flex-shrink:0;height:100%;min-height:36px;border-radius:3px;margin-top:2px;}
+.find-body{flex:1}
+.find-name{font-size:13px;line-height:1.5;color:var(--text)}
+.find-meta{font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:10px}
+.find-rec{font-size:12px;color:var(--dim);margin-top:5px;padding:8px 12px;background:var(--s2);border-radius:6px;line-height:1.5;border-left:2px solid var(--csk-yellow)}
+
+/* Auditor Sign-off Card Styles */
+.sign-off-card { background: var(--s2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; gap: 1.5rem; }
+.so-left { display: flex; gap: 1.25rem; align-items: center; }
+.so-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--s1); border: 2px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--text); font-weight: bold; overflow: hidden; }
+.so-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.so-details h4 { font-size: 1.1rem; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text); }
+.so-details p { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+.so-right { display: flex; align-items: center; }
+.so-sig-box { border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 10px; min-width: 220px; min-height: 80px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); overflow: hidden; }
+.so-sig-box img { max-height: 70px; max-width: 100%; filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3)); transform: rotate(-2deg); }
+.so-disclaimer { width: 100%; font-size: 11px; color: var(--muted); font-style: italic; margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); }
+
+/* Canvas Styles */
+#sig-canvas { width: 100%; height: 100px; background: var(--s2); border: 1px dashed var(--border2); border-radius: 6px; cursor: crosshair; touch-action: none; transition: border-color 0.2s; }
+#sig-canvas:hover { border-color: var(--csk-yellow); }
+
+@media(max-width:700px){
+  .grid-2{grid-template-columns:1fr}
+  .score-hero{grid-template-columns:1fr;text-align:center}
+  .score-ring-wrap{margin:0 auto}
+  .deck-selector{flex-direction:column;align-items:center}
+  .sign-off-card { flex-direction: column; align-items: flex-start; }
+  .so-sig-box { width: 100%; min-height: 80px; }
+}
+</style>
+</head>
+<body>
+
+<div id="intro">
+  <div class="intro-badge">SECURITY ASSESSMENT TOOL</div>
+  <h1 class="intro-title">Mr.AudIT<br><span>Select Assessment Target</span></h1>
+  <p class="intro-sub">Choose the environment you are auditing today. The dashboard generates your risk score, findings, charts, and recommendations based on your answers.</p>
+  
+  <div class="deck-selector">
+    <div class="deck-card" onclick="initAssessment('corporate')">
+      <div class="deck-icon">🏢</div>
+      <div class="deck-title">Corporate IT</div>
+      <div class="deck-desc">7 Domains • 52 Questions<br>Standard IT infrastructure, cloud, compliance, and policies.</div>
+      <button class="start-btn secondary">Select Corporate Audit</button>
+    </div>
+    
+    <div class="deck-card" onclick="initAssessment('supermarket')">
+      <div class="deck-icon">🛒</div>
+      <div class="deck-title">Supermarket IT</div>
+      <div class="deck-desc">5 Domains • 25 Questions<br>POS systems, store Wi-Fi, physical security, and cashiers.</div>
+      <button class="start-btn">Select Supermarket Audit</button>
+    </div>
+  </div>
+</div>
+
+<div id="audit-details" style="display:none;">
+  <div class="intro-badge" id="selected-deck-badge">SETUP</div>
+  <h2 class="intro-title" style="font-size:2rem; margin-bottom:2rem;">Engagement <span>Details</span></h2>
+  
+  <div class="form-container">
+    <div class="form-group">
+      <label class="form-label">Target Organization / Company Name</label>
+      <input type="text" id="meta-company" class="form-input" placeholder="e.g. Acme Retail Inc.">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Type of IT Audit</label>
+      <select id="meta-type" class="form-select">
+        <option value="Baseline Security Assessment">Baseline Security Assessment</option>
+        <option value="Internal Compliance Audit">Internal Compliance Audit</option>
+        <option value="Third-Party Risk Assessment">Third-Party Risk Assessment</option>
+        <option value="Post-Incident Review">Post-Incident Review</option>
+      </select>
+    </div>
+    
+    <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div>
+        <label class="form-label">Organization Logo (Optional)</label>
+        <input type="file" id="meta-org-logo" accept="image/*" class="form-input">
+      </div>
+      <div>
+        <label class="form-label">Auditor Photo (Optional)</label>
+        <input type="file" id="meta-auditor-photo" accept="image/*" class="form-input">
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div class="form-group">
+        <label class="form-label">Auditor Name</label>
+        <input type="text" id="meta-auditor" class="form-input" placeholder="e.g. Jane Doe, CISA">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role</label>
+        <input type="text" id="meta-role" class="form-input" placeholder="e.g. Lead IT Auditor">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input type="email" id="meta-email" class="form-input" placeholder="e.g. auditor@example.com">
+    </div>
+    
+    <div class="form-group" style="margin-top: 1.5rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <label class="form-label" style="margin-bottom:0;">Digital Signature</label>
+        <button type="button" onclick="clearSignature()" style="background:transparent; border:none; color:var(--muted); font-size:11px; cursor:pointer; text-decoration:underline; font-family:'Syne',sans-serif;">Clear Signature</button>
+      </div>
+      <canvas id="sig-canvas"></canvas>
+      <div style="font-size:10px; color:var(--muted); margin-top:4px; text-align:right;">Draw your signature using mouse or touch</div>
+    </div>
+
+    <button class="start-btn" style="margin-top:0.5rem;" onclick="startQuiz()">Begin Assessment →</button>
+  </div>
+</div>
+
+<div id="quiz">
+  <div class="quiz-header">
+    <div class="quiz-title-small" id="quiz-header-title">Assessment</div>
+    <div class="quiz-progress-wrap">
+      <div class="quiz-progress-label">
+        <span id="prog-label">0 answered</span>
+        <span id="prog-pct">0%</span>
+      </div>
+      <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <button class="skip-btn" onclick="generateReport()">Skip → Generate</button>
+  </div>
+  <div class="quiz-body" id="quizBody"></div>
+  <div class="generate-wrap">
+    <div class="gen-info">
+      <strong id="gen-answered">0</strong> answered
+      &nbsp;·&nbsp; <span id="gen-score-preview" style="color:var(--csk-yellow)">Answer questions to see score preview</span>
+    </div>
+    <button class="generate-btn" id="genBtn" onclick="generateReport()">Generate Audit Report →</button>
+  </div>
+</div>
+
+<div id="results"></div>
+
+<script>
+const CORPORATE_DOMAINS = [
+  {id:'access', name:'Access Control', icon:'🔐', color:'#fcca06', desc:'User accounts & privileges', questions:[
+    {id:'ac1', text:'Do you enforce a strong password policy (min length, complexity, expiry)?', weight:3},
+    {id:'ac2', text:'Is Multi-Factor Authentication (MFA) enabled for all privileged accounts?', weight:4},
+    {id:'ac3', text:'Is MFA enabled for all standard user accounts?', weight:3},
+    {id:'ac4', text:'Are user access rights reviewed at least quarterly?', weight:3},
+    {id:'ac5', text:'Is there a formal process for revoking access when employees leave?', weight:4},
+    {id:'ac6', text:'Are orphan/inactive accounts automatically disabled after 30-60 days?', weight:3},
+    {id:'ac7', text:'Is the principle of least privilege enforced across all systems?', weight:4},
+    {id:'ac8', text:'Are privileged access sessions logged and monitored?', weight:3}
+  ]},
+  {id:'data', name:'Data Security', icon:'🛡️', color:'#4ade80', desc:'Encryption & backup', questions:[
+    {id:'ds1', text:'Is sensitive data (PII, financial) classified and inventoried?', weight:3},
+    {id:'ds2', text:'Is data encrypted at rest for all critical systems?', weight:4},
+    {id:'ds3', text:'Is data encrypted in transit (TLS 1.2+) across all services?', weight:4},
+    {id:'ds4', text:'Are backups performed daily and stored offsite/in the cloud?', weight:3},
+    {id:'ds5', text:'Is backup restoration tested at least annually?', weight:3},
+    {id:'ds6', text:'Is there a documented data retention and disposal policy?', weight:2},
+    {id:'ds7', text:'Is DLP (Data Loss Prevention) tooling in place?', weight:3},
+    {id:'ds8', text:'Are database access logs monitored for anomalies?', weight:3}
+  ]},
+  {id:'network', name:'Network Security', icon:'🌐', color:'#f26522', desc:'Firewalls & monitoring', questions:[
+    {id:'ns1', text:'Is there a next-gen firewall with active rule review processes?', weight:4},
+    {id:'ns2', text:'Is network segmentation implemented (DMZ, VLANs)?', weight:3},
+    {id:'ns3', text:'Is Intrusion Detection/Prevention (IDS/IPS) deployed?', weight:3},
+    {id:'ns4', text:'Are all network devices on an asset inventory?', weight:2},
+    {id:'ns5', text:'Are unused ports and services disabled on network devices?', weight:3},
+    {id:'ns6', text:'Is remote access (VPN/Zero Trust) enforced for external connections?', weight:4},
+    {id:'ns7', text:'Is network traffic monitored and logged (SIEM/NetFlow)?', weight:3},
+    {id:'ns8', text:'Are wireless networks separated and secured with WPA3/enterprise?', weight:2}
+  ]},
+  {id:'patch', name:'Patch & Vuln.', icon:'🔧', color:'#004b87', desc:'Scanning & remediation', questions:[
+    {id:'pv1', text:'Are critical patches applied within 30 days of release?', weight:4},
+    {id:'pv2', text:'Is there a formal patch management policy and schedule?', weight:3},
+    {id:'pv3', text:'Are vulnerability scans performed at least monthly?', weight:3},
+    {id:'pv4', text:'Is a CVE/vulnerability tracking system in use?', weight:3},
+    {id:'pv5', text:'Are end-of-life systems (OS/software) inventoried and flagged?', weight:3},
+    {id:'pv6', text:'Is penetration testing performed at least annually?', weight:3},
+    {id:'pv7', text:'Are third-party software components reviewed for vulnerabilities?', weight:2},
+    {id:'pv8', text:'Is there a formal remediation SLA based on vulnerability severity?', weight:3}
+  ]},
+  {id:'incident', name:'Incident Response', icon:'🚨', color:'#f87171', desc:'Detection & recovery', questions:[
+    {id:'ir1', text:'Is there a documented Incident Response Plan (IRP)?', weight:4},
+    {id:'ir2', text:'Has the IRP been tested in the last 12 months?', weight:3},
+    {id:'ir3', text:'Is there a dedicated Security Operations Center or on-call SOC?', weight:3},
+    {id:'ir4', text:'Are security alerts reviewed within defined SLA timeframes?', weight:3},
+    {id:'ir5', text:'Is there a documented Business Continuity / Disaster Recovery plan?', weight:3},
+    {id:'ir6', text:'Are incident response logs kept for forensic investigation?', weight:3},
+    {id:'ir7', text:'Are lessons-learned reviews conducted after major incidents?', weight:2}
+  ]},
+  {id:'compliance', name:'Compliance', icon:'📋', color:'#34d399', desc:'Policies & governance', questions:[
+    {id:'cp1', text:'Is there a documented InfoSec Policy approved by leadership?', weight:3},
+    {id:'cp2', text:'Are staff required to complete annual security awareness training?', weight:3},
+    {id:'cp3', text:'Is there a risk register that is reviewed quarterly?', weight:3},
+    {id:'cp4', text:'Are third-party vendors assessed for security risk before onboarding?', weight:3},
+    {id:'cp5', text:'Are relevant compliance frameworks (ISO/SOC 2) being tracked?', weight:3},
+    {id:'cp6', text:'Are internal audits performed at least annually?', weight:3},
+    {id:'cp7', text:'Is there a formal change management process for IT changes?', weight:2},
+    {id:'cp8', text:'Are security policies reviewed and updated at least annually?', weight:2}
+  ]},
+  {id:'physical', name:'Physical & Cloud', icon:'🏢', color:'#38bdf8', desc:'Cloud config & infrastructure', questions:[
+    {id:'ph1', text:'Are server rooms access-controlled with logs?', weight:3},
+    {id:'ph2', text:'Are CCTV cameras monitoring critical infrastructure areas?', weight:2},
+    {id:'ph3', text:'Is cloud infrastructure configured with security baselines?', weight:4},
+    {id:'ph4', text:'Are cloud storage buckets configured to deny public access?', weight:4},
+    {id:'ph5', text:'Is Cloud Security Posture Management (CSPM) tooling in use?', weight:3},
+    {id:'ph6', text:'Are IAM roles in cloud environments reviewed regularly?', weight:3},
+    {id:'ph7', text:'Are dev/test environments isolated from production environments?', weight:3}
+  ]}
+];
+
+const SUPERMARKET_DOMAINS = [
+  {id:'pos', name:'POS & Checkout', icon:'💳', color:'#fcca06', desc:'Point of sale security', questions:[
+    {id:'spos1', text:'Does every cashier have their own unique login or PIN for the POS?', weight:4},
+    {id:'spos2', text:'Are POS screens configured to lock automatically when inactive?', weight:3},
+    {id:'spos3', text:'Are physical checks performed on card readers daily for skimmers?', weight:4},
+    {id:'spos4', text:'Are the POS computers restricted from general web browsing/email?', weight:3},
+    {id:'spos5', text:'Is there a UPS (battery backup) connected to the main POS registers?', weight:3}
+  ]},
+  {id:'net', name:'Store Network & Wi-Fi', icon:'📡', color:'#f26522', desc:'Guest Wi-Fi & routers', questions:[
+    {id:'snet1', text:'Is the Customer Guest Wi-Fi completely separated from the POS network?', weight:4},
+    {id:'snet2', text:'Has the default admin password on the store router been changed?', weight:4},
+    {id:'snet3', text:'Is the back-office Wi-Fi secured with WPA2/WPA3 and a strong password?', weight:3},
+    {id:'snet4', text:'Are exposed ethernet ports in public areas disabled or restricted?', weight:2},
+    {id:'snet5', text:'Is a firewall active to block incoming traffic to the store network?', weight:3}
+  ]},
+  {id:'phy', name:'Physical & Surveillance', icon:'🎥', color:'#004b87', desc:'CCTV & alarms', questions:[
+    {id:'sphy1', text:'Is the back-office server/router rack securely locked?', weight:4},
+    {id:'sphy2', text:'Do CCTV cameras have clear visibility of all cash registers?', weight:3},
+    {id:'sphy3', text:'Do CCTV cameras cover the entrance and back delivery doors?', weight:3},
+    {id:'sphy4', text:'Are surveillance DVR/NVR boxes locked in a secure room/cabinet?', weight:3},
+    {id:'sphy5', text:'Is the store equipped with a monitored burglar alarm system?', weight:2}
+  ]},
+  {id:'usr', name:'Employee Access', icon:'🧑‍💼', color:'#4ade80', desc:'Manager overrides & policies', questions:[
+    {id:'susr1', text:'Are manager override cards/PINs kept strictly confidential?', weight:4},
+    {id:'susr2', text:'Is there a checklist to disable accounts immediately when staff quit?', weight:4},
+    {id:'susr3', text:'Are generic shared accounts (e.g., "Cashier1") strictly prohibited?', weight:3},
+    {id:'susr4', text:'Are staff trained to spot phishing emails or social engineering?', weight:3},
+    {id:'susr5', text:'Is the back-office PC password protected and locked when unattended?', weight:3}
+  ]},
+  {id:'inv', name:'Inventory & Backup', icon:'📦', color:'#a78bfa', desc:'Scanners & daily reports', questions:[
+    {id:'sinv1', text:'Are daily sales and inventory reports backed up automatically?', weight:4},
+    {id:'sinv2', text:'Are handheld inventory scanners securely connected to the private Wi-Fi?', weight:2},
+    {id:'sinv3', text:'Are paper receipts and sensitive documents shredded before disposal?', weight:2},
+    {id:'sinv4', text:'Is anti-virus/anti-malware installed on the back-office computer?', weight:4},
+    {id:'sinv5', text:'Is remote access to the store by IT/Vendors logged and secured?', weight:3}
+  ]}
+];
+
+const RECS = {
+  ac1:"Implement a password policy: 12+ chars, complexity rules.", ac2:"Enable MFA via TOTP/FIDO2 for all admin accounts.", ac3:"Roll out MFA to all users.", ac4:"Schedule quarterly UAR reviews.", ac5:"Build an offboarding checklist.", ac6:"Auto-disable accounts inactive >45 days.", ac7:"Conduct RBAC audit.", ac8:"Enable PAM session recording.", ds1:"Create a data classification policy.", ds2:"Enable AES-256 encryption at rest.", ds3:"Enforce TLS 1.2+ everywhere.", ds4:"Implement 3-2-1 backup rule.", ds5:"Schedule annual DR drill.", ds6:"Document retention schedules.", ds7:"Deploy endpoint DLP.", ds8:"Enable database audit logging.", ns1:"Implement NGFW (Palo Alto, Fortinet).", ns2:"Segment network into zones (VLANs).", ns3:"Deploy IDS/IPS internally.", ns4:"Maintain a CMDB.", ns5:"Run port scans monthly.", ns6:"Replace legacy VPN with Zero Trust.", ns7:"Deploy SIEM.", ns8:"Separate guest WiFi from corporate.", pv1:"Establish patch SLA: Critical=7 days.", pv2:"Document patching schedule.", pv3:"Run authenticated vulnerability scans monthly.", pv4:"Implement a vulnerability management platform.", pv5:"Create EOL inventory.", pv6:"Commission annual external pen test.", pv7:"Implement SCA in CI/CD.", pv8:"Define SLA for remediation.", ir1:"Document IRP with roles & playbooks.", ir2:"Run tabletop exercises bi-annually.", ir3:"Establish 24/7 alert monitoring.", ir4:"Define SLA per alert severity.", ir5:"Document BCP/DR.", ir6:"Enable immutable logging.", ir7:"Conduct post-incident reviews.", cp1:"Draft InfoSec Policy.", cp2:"Implement mandatory annual training.", cp3:"Create a risk register.", cp4:"Implement vendor risk assessments.", cp5:"Map controls to chosen framework.", cp6:"Schedule annual internal audit.", cp7:"Implement CAB process.", cp8:"Schedule annual policy review.", ph1:"Install biometric/badge access on server rooms.", ph2:"Install CCTV in server rooms.", ph3:"Apply CIS Benchmark Level 1.", ph4:"Enable S3 Block Public Access.", ph5:"Deploy CSPM.", ph6:"Audit cloud IAM roles.", ph7:"Isolate dev/test environments.",
+  spos1:"Assign individual accounts/PINs to track drawer shortages.", spos2:"Configure POS software to time-out after 1-2 mins.", spos3:"Train managers to physically check card readers daily for skimmers.", spos4:"Apply kiosk-mode or firewall rules to POS machines.", spos5:"Install battery backups for safe shutdowns.", snet1:"Put Guest Wi-Fi on an isolated VLAN.", snet2:"Change the default 'admin' router password.", snet3:"Update back-office Wi-Fi to WPA3.", snet4:"Disable exposed ethernet ports in public areas.", snet5:"Ensure ISP router has SPI firewall enabled.", sphy1:"Lock the main internet router/server cabinet.", sphy2:"Adjust cameras to clearly see the cash drawer.", sphy3:"Ensure cameras cover rear delivery doors.", sphy4:"Lock the DVR/NVR box in a cage/cabinet.", sphy5:"Contract with an alarm company for off-hours monitoring.", susr1:"Managers must never share override PINs.", susr2:"Use a checklist to revoke access when staff quit.", susr3:"Eliminate shared 'Register 1' logins.", susr4:"Provide basic 10-min training on phishing.", susr5:"Lock the back-office PC when unattended.", sinv1:"Configure automatic cloud backups for daily reports.", sinv2:"Connect inventory guns only to private Wi-Fi.", sinv3:"Shred sensitive documents.", sinv4:"Install standard endpoint protection.", sinv5:"Secure remote access tools (TeamViewer) with passwords."
+};
+
+let activeDomains = [];
+let answers = {};
+let currentTotal = 0;
+let currentDeckName = "";
+
+// Store Engagement Metadata & Images
+let auditMeta = {
+  company: '',
+  type: '',
+  auditor: '',
+  role: '',
+  email: '',
+  orgLogo: '',
+  auditorPhoto: '',
+  signDataUrl: ''
+};
+
+// Handle Image Uploads
+document.getElementById('meta-org-logo').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(event) { auditMeta.orgLogo = event.target.result; };
+    reader.readAsDataURL(file);
+  }
+});
+
+document.getElementById('meta-auditor-photo').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(event) { auditMeta.auditorPhoto = event.target.result; };
+    reader.readAsDataURL(file);
+  }
+});
+
+// Canvas variables
+let sigCanvas, sigCtx;
+let isDrawing = false;
+
+function initAssessment(type) {
+  activeDomains = type === 'corporate' ? CORPORATE_DOMAINS : SUPERMARKET_DOMAINS;
+  
+  // CHANGED HERE: We swap out "Supermarket" for "Retail" once they enter the setup/quiz
+  currentDeckName = type === 'corporate' ? "Corporate IT Assessment" : "Retail IT Assessment";
+  
+  document.getElementById('quiz-header-title').innerText = currentDeckName;
+  document.getElementById('selected-deck-badge').innerText = currentDeckName.toUpperCase();
+  currentTotal = activeDomains.reduce((s,d)=>s+d.questions.length, 0);
+  
+  document.getElementById('intro').style.display='none';
+  document.getElementById('audit-details').style.display='flex';
+  
+  setTimeout(initSignaturePad, 50);
+}
+
+// Signature Pad Logic
+function initSignaturePad() {
+  sigCanvas = document.getElementById('sig-canvas');
+  if(!sigCanvas) return;
+  
+  const rect = sigCanvas.getBoundingClientRect();
+  sigCanvas.width = rect.width;
+  sigCanvas.height = rect.height || 100;
+
+  sigCtx = sigCanvas.getContext('2d');
+  sigCtx.strokeStyle = '#60a5fa'; 
+  sigCtx.lineWidth = 2.5;
+  sigCtx.lineCap = 'round';
+  sigCtx.lineJoin = 'round';
+
+  sigCanvas.onmousedown = startDraw;
+  sigCanvas.onmousemove = draw;
+  sigCanvas.onmouseup = endDraw;
+  sigCanvas.onmouseout = endDraw;
+
+  sigCanvas.ontouchstart = startDraw;
+  sigCanvas.ontouchmove = draw;
+  sigCanvas.ontouchend = endDraw;
+}
+
+function getPos(e) {
+  const rect = sigCanvas.getBoundingClientRect();
+  let clientX = e.clientX;
+  let clientY = e.clientY;
+  
+  if (e.touches && e.touches.length > 0) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  }
+  return { x: clientX - rect.left, y: clientY - rect.top };
+}
+
+function startDraw(e) {
+  if(e.type.includes('touch')) e.preventDefault();
+  isDrawing = true;
+  const pos = getPos(e);
+  sigCtx.beginPath();
+  sigCtx.moveTo(pos.x, pos.y);
+}
+
+function draw(e) {
+  if(e.type.includes('touch')) e.preventDefault();
+  if(!isDrawing) return;
+  const pos = getPos(e);
+  sigCtx.lineTo(pos.x, pos.y);
+  sigCtx.stroke();
+}
+
+function endDraw(e) {
+  if(e.type.includes('touch')) e.preventDefault();
+  isDrawing = false;
+  sigCtx.closePath();
+}
+
+function clearSignature() {
+  if(sigCtx && sigCanvas) {
+    sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+  }
+}
+
+function startQuiz() {
+  auditMeta.company = document.getElementById('meta-company').value.trim() || 'Not Specified';
+  auditMeta.type = document.getElementById('meta-type').value;
+  auditMeta.auditor = document.getElementById('meta-auditor').value.trim() || 'Not Specified';
+  auditMeta.role = document.getElementById('meta-role').value.trim() || 'Auditor';
+  auditMeta.email = document.getElementById('meta-email').value.trim() || 'No email provided';
+  
+  // Capture signature
+  if (sigCanvas) {
+    auditMeta.signDataUrl = sigCanvas.toDataURL('image/png');
+  }
+
+  document.getElementById('audit-details').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  renderQuiz();
+  updateProgress();
+}
+
+function renderQuiz(){
+  document.getElementById('quizBody').innerHTML = activeDomains.map((d, i) => `
+    <div class="domain-section" style="animation-delay:${i*0.05}s">
+      <div class="domain-header">
+        <div class="domain-icon" style="color:${d.color}">${d.icon}</div>
+        <div><div class="domain-name">${d.name}</div><div class="domain-desc">${d.desc}</div></div>
+        <div class="domain-count">${d.questions.length} controls</div>
+      </div>
+      ${d.questions.map(q => `
+        <div class="q-item" id="qwrap-${q.id}">
+          <div class="q-text"><span class="q-weight">W${q.weight}</span>${q.text}</div>
+          <div class="q-options">
+            <button class="q-opt" onclick="answer('${q.id}','yes',this)">✓ Yes</button>
+            <button class="q-opt" onclick="answer('${q.id}','partial',this)">~ Partial</button>
+            <button class="q-opt" onclick="answer('${q.id}','no',this)">✗ No</button>
+            <button class="q-opt" onclick="answer('${q.id}','na',this)">N/A</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>`).join('');
+}
+
+function answer(qid, val, btn){
+  answers[qid] = val;
+  const wrap = document.getElementById('qwrap-'+qid);
+  wrap.querySelectorAll('.q-opt').forEach(b => b.classList.remove('sel-yes','sel-partial','sel-no','sel-na'));
+  btn.classList.add('sel-'+val);
+  wrap.classList.add('answered');
+  updateProgress();
+}
+
+function updateProgress(){
+  const done = Object.keys(answers).length;
+  const pct = currentTotal > 0 ? Math.round((done / currentTotal) * 100) : 0;
+  document.getElementById('prog-label').textContent = `${done} of ${currentTotal} answered`;
+  document.getElementById('prog-pct').textContent = pct+'%';
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('gen-answered').textContent = done;
+  if(done > 0) document.getElementById('gen-score-preview').textContent = `Score preview: ${computeScore().overall}/100`;
+}
+
+function computeScore(){
+  const domainScores = {};
+  let totalWeight = 0, totalScore = 0;
+  activeDomains.forEach(d => {
+    let dWeight=0, dScore=0;
+    d.questions.forEach(q => {
+      const a = answers[q.id];
+      if(!a || a==='na') return;
+      dWeight += q.weight; totalWeight += q.weight;
+      const pts = a==='yes' ? q.weight : a==='partial' ? q.weight*0.5 : 0;
+      dScore += pts; totalScore += pts;
+    });
+    domainScores[d.id] = dWeight>0 ? Math.round(dScore/dWeight*100) : null;
+  });
+  return {overall: totalWeight>0 ? Math.round(totalScore/totalWeight*100) : 0, domainScores};
+}
+
+function generateReport(){
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('results').style.display='block';
+  buildResults();
+}
+
+function buildResults(){
+  const score = computeScore();
+  const overall = score.overall;
+  const ds = score.domainScores;
+  const findings = [];
+  
+  activeDomains.forEach(d => {
+    d.questions.forEach(q => {
+      const a = answers[q.id];
+      if(a==='no' || a==='partial'){
+        const sev = q.weight>=4 ? (a==='no'?'critical':'high') : q.weight===3 ? (a==='no'?'high':'medium') : 'low';
+        findings.push({...q, domain:d.name, domainColor:d.color, answer:a, severity:sev});
+      }
+    });
+  });
+  
+  findings.sort((a,b)=> ({critical:0,high:1,medium:2,low:3})[a.severity]-({critical:0,high:1,medium:2,low:3})[b.severity]);
+
+  const critCount = findings.filter(f=>f.severity==='critical').length;
+  const highCount = findings.filter(f=>f.severity==='high').length;
+  const medCount  = findings.filter(f=>f.severity==='medium').length;
+  const lowCount  = findings.filter(f=>f.severity==='low').length;
+  const yesCount  = Object.values(answers).filter(v=>v==='yes').length;
+  const totalAnswered = Object.values(answers).filter(v=>v!=='na').length;
+
+  const verdictColor = overall>=80 ? '#4ade80' : overall>=65 ? '#facc15' : overall>=45 ? '#F26522' : '#f87171';
+  const verdictText  = overall>=80 ? 'Low Risk' : overall>=65 ? 'Moderate Risk' : overall>=45 ? 'High Risk' : 'Critical Risk';
+  const now = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  const isoDate = new Date().toISOString().split('T')[0];
+  
+  const initial = auditMeta.auditor !== 'Not Specified' ? auditMeta.auditor.charAt(0).toUpperCase() : 'A';
+  const avatarDisplay = auditMeta.auditorPhoto ? `<img src="${auditMeta.auditorPhoto}" alt="Auditor">` : initial;
+  const logoDisplay = auditMeta.orgLogo ? `<img src="${auditMeta.orgLogo}" style="height:36px; max-width:80px; object-fit:contain; border-radius:4px; background:#fff; padding:2px;">` : '';
+
+  let actionPlanHTML = '';
+  if (findings.length > 0) {
+    const topFindings = findings.slice(0, 4);
+    actionPlanHTML = topFindings.map((f, index) => {
+      const c={critical:'#f87171',high:'#facc15',medium:'#4ade80',low:'#60a5fa'}[f.severity];
+      return `
+      <div style="background:var(--s2); border-left:4px solid ${c}; padding:1rem; border-radius:6px; margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <strong style="color:var(--text); font-size:14px;">${index + 1}. ${f.domain}</strong>
+          <span style="background:rgba(255,255,255,0.1); color:${c}; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:bold; letter-spacing:1px; text-transform:uppercase;">${f.severity} Priority</span>
+        </div>
+        <div style="color:var(--csk-yellow); font-size:13px; line-height:1.5;"><strong>Action Required:</strong> ${RECS[f.id]||'Review and implement this control immediately.'}</div>
+      </div>`;
+    }).join('');
+  } else {
+    actionPlanHTML = `<div style="text-align:center;padding:2rem;color:var(--muted)">No critical actions required at this time.</div>`;
+  }
+
+  // Check if canvas is basically empty (a blank canvas dataURL is quite long, but signature will be distinct. Safest is just to show the img tag if it exists)
+  let sigDisplay = auditMeta.signDataUrl && auditMeta.signDataUrl.length > 1000 ? `<img src="${auditMeta.signDataUrl}" alt="Digital Signature">` : '<span style="color:var(--muted); font-size:12px;">No signature provided</span>';
+
+  document.getElementById('results').innerHTML = `
+    <div class="res-header">
+      <div class="res-header-left">
+        <div class="res-logo">Mr.AudIT</div>
+        <div><div class="res-title">${currentDeckName} Report</div><div class="res-meta">Generated ${now} · ${totalAnswered} controls assessed</div></div>
+      </div>
+      <div class="res-actions">
+        <button class="btn-ghost" onclick="retake()">← Back to Start</button>
+        <button class="btn-primary" onclick="window.print()">Print / Save PDF</button>
+      </div>
+    </div>
+    <div class="res-body">
+      
+      <div class="card" style="margin-bottom:1.5rem; background:var(--s2); border-color:var(--border2);">
+        <div class="card-hd" style="color:var(--text);">IT Audit Engagement Details</div>
+        <div class="grid-4" style="gap:1.5rem; align-items:center;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            ${logoDisplay}
+            <div>
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;letter-spacing:1px;">Target Organization</div>
+              <div style="font-size:15px;font-weight:700;color:var(--text);">${auditMeta.company}</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;letter-spacing:1px;">Audit Type</div>
+            <div style="font-size:15px;font-weight:700;color:var(--text);">${auditMeta.type}</div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;letter-spacing:1px;">Lead Auditor</div>
+            <div style="font-size:15px;font-weight:700;color:var(--text);">${auditMeta.auditor}</div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;letter-spacing:1px;">Date Completed</div>
+            <div style="font-size:15px;font-weight:700;color:var(--text);">${isoDate}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="score-hero">
+        <div class="score-ring-wrap">
+          <svg class="score-ring-svg" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="58" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="10"/>
+            <circle cx="70" cy="70" r="58" fill="none" stroke="${verdictColor}" stroke-width="10" stroke-dasharray="${2*Math.PI*58}" stroke-dashoffset="${2*Math.PI*58*(1-overall/100)}" stroke-linecap="round" transform="rotate(-90 70 70)" style="transition:stroke-dashoffset 1.2s ease"/>
+            <text x="70" y="64" text-anchor="middle" font-family="JetBrains Mono" font-size="30" font-weight="700" fill="${verdictColor}">${overall}</text>
+            <text x="70" y="82" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#94a3b8">/100</text>
+          </svg>
+          <div class="score-label">Risk Score</div>
+        </div>
+        <div>
+          <div class="score-verdict" style="color:${verdictColor}">${verdictText}</div>
+          <div class="score-desc">Based on your answers, this is the security posture of the assessed environment.</div>
+          <div class="score-stats">
+            <div class="stat-box"><div class="stat-key">Critical</div><div class="stat-val" style="color:#f87171">${critCount}</div></div>
+            <div class="stat-box"><div class="stat-key">High</div><div class="stat-val" style="color:#facc15">${highCount}</div></div>
+            <div class="stat-box"><div class="stat-key">Medium</div><div class="stat-val" style="color:#4ade80">${medCount}</div></div>
+            <div class="stat-box"><div class="stat-key">Passed</div><div class="stat-val" style="color:#60a5fa">${yesCount}</div></div>
+            <div class="stat-box"><div class="stat-key">Total</div><div class="stat-val">${totalAnswered}</div></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="grid-2">
+        <div class="card"><div class="card-hd">Domain Radar Mapping</div><div class="chart-wrap" style="height:250px"><canvas id="radarChart"></canvas></div></div>
+        <div class="card"><div class="card-hd">Answer Distribution</div><div class="chart-wrap" style="height:250px"><canvas id="ansChart"></canvas></div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card"><div class="card-hd">Findings by Domain</div><div class="chart-wrap" style="height:220px"><canvas id="domainFindChart"></canvas></div></div>
+        <div class="card"><div class="card-hd">Findings by Severity</div><div class="chart-wrap" style="height:220px"><canvas id="sevChart"></canvas></div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:1.2rem; background:rgba(252,203,6,0.03); border-color:var(--csk-yellow);">
+        <div class="card-hd" style="color:var(--csk-yellow);">Top Recommendations & Action Plan</div>
+        <p style="font-size:13px; color:var(--dim); margin-bottom:1rem;">To immediately improve your risk score and reduce exposure, implement the following prioritized fixes:</p>
+        ${actionPlanHTML}
+      </div>
+
+      <div class="card">
+        <div class="card-hd">Detailed Audit Findings Log <span style="color:var(--csk-yellow);font-size:11px">${findings.length} items</span></div>
+        ${findings.length===0 ? `<div style="text-align:center;padding:2rem;color:var(--muted)">🎉 No findings — all assessed controls passed!</div>` : findings.map(f=>{
+              const c={critical:'#f87171',high:'#facc15',medium:'#4ade80',low:'#60a5fa'}[f.severity];
+              return `<div class="finding-item"><div class="find-sev" style="background:${c}"></div><div class="find-body"><div class="find-name">${f.text}</div><div class="find-meta"><span style="color:${c};font-weight:600">${f.severity.toUpperCase()}</span><span>${f.domain}</span><span>Answer: ${f.answer==='partial'?'Partial':'No'}</span><span>Weight: ${f.weight}/4</span></div><div class="find-rec">💡 ${RECS[f.id]||'Review and implement this control.'}</div></div></div>`;
+            }).join('')}
+      </div>
+
+      <div class="sign-off-card">
+        <div class="so-left">
+          <div class="so-avatar">${avatarDisplay}</div>
+          <div class="so-details">
+            <h4>${auditMeta.auditor}</h4>
+            <p>${auditMeta.role}</p>
+            <p>${auditMeta.email}</p>
+            <p style="margin-top:6px; color:var(--text);">Date: ${isoDate}</p>
+          </div>
+        </div>
+        <div class="so-right">
+          <div class="so-sig-box">${sigDisplay}</div>
+        </div>
+        <div class="so-disclaimer">
+          "This audit report is generated based on the information provided during the audit assessment."
+        </div>
+      </div>
+
+    </div>`;
+
+  setTimeout(()=>{
+    const counts = [Object.values(answers).filter(v=>v==='yes').length, Object.values(answers).filter(v=>v==='partial').length, Object.values(answers).filter(v=>v==='no').length, Object.values(answers).filter(v=>v==='na').length];
+    new Chart(document.getElementById('ansChart'),{type:'doughnut',data:{labels:['Yes','Partial','No','N/A'],datasets:[{data:counts,backgroundColor:['#4ade80','#facc15','#f87171','#334155'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#cbd5e1',font:{size:11}}}},cutout:'65%'}});
+    
+    new Chart(document.getElementById('radarChart'),{
+      type:'radar',
+      data:{
+        labels:activeDomains.map(d=>d.name),
+        datasets:[{
+          data:activeDomains.map(d=>ds[d.id]||0),
+          backgroundColor:'rgba(252,203,6,0.15)',
+          borderColor:'#FCCB06',
+          pointBackgroundColor:'#FCCB06',
+          borderWidth: 2
+        }]
+      },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{grid:{color:'rgba(255,255,255,0.05)'},pointLabels:{color:'#94a3b8',font:{size:10}},ticks:{display:false,min:0,max:100}}}}
+    });
+
+    new Chart(document.getElementById('domainFindChart'),{type:'bar',data:{labels:activeDomains.map(d=>d.name),datasets:[{data:activeDomains.map(d=>findings.filter(f=>f.domain===d.name).length),backgroundColor:activeDomains.map(d=>d.color+'cc'),borderRadius:5,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#94a3b8',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#94a3b8',font:{size:11},stepSize:1}}}}});
+
+    new Chart(document.getElementById('sevChart'),{
+      type:'bar',
+      data:{
+        labels:['Critical', 'High', 'Medium', 'Low'],
+        datasets:[{
+          data:[critCount, highCount, medCount, lowCount],
+          backgroundColor:['#f87171', '#facc15', '#4ade80', '#60a5fa'],
+          borderRadius: 4
+        }]
+      },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#94a3b8',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#94a3b8',font:{size:11},stepSize:1}}}}
+    });
+
+  }, 100);
+}
+
+function retake(){
+  answers = {}; activeDomains = []; currentTotal = 0; currentDeckName = "";
+  auditMeta = { company: '', type: '', auditor: '', role: '', email: '', orgLogo: '', auditorPhoto: '', signDataUrl: '' };
+  
+  // Clear inputs
+  document.getElementById('meta-company').value = '';
+  document.getElementById('meta-type').selectedIndex = 0;
+  document.getElementById('meta-auditor').value = '';
+  document.getElementById('meta-role').value = '';
+  document.getElementById('meta-email').value = '';
+  document.getElementById('meta-org-logo').value = '';
+  document.getElementById('meta-auditor-photo').value = '';
+  
+  clearSignature();
+
+  document.getElementById('results').innerHTML=''; document.getElementById('results').style.display='none';
+  document.getElementById('intro').style.display='flex';
+  document.querySelectorAll('.q-opt').forEach(b=>b.classList.remove('sel-yes','sel-partial','sel-no','sel-na'));
+  document.querySelectorAll('.q-item').forEach(i=>i.classList.remove('answered'));
+  document.getElementById('prog-label').textContent = '0 answered'; document.getElementById('prog-pct').textContent = '0%';
+  document.getElementById('prog-fill').style.width = '0%'; document.getElementById('gen-answered').textContent = '0';
+  document.getElementById('gen-score-preview').textContent = 'Answer questions to see score preview';
+}
+</script>
+</body>
+</html>
